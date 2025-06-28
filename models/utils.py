@@ -4,14 +4,15 @@ def train_epoch(model, dataloader, criterion, optimizer):
     model.train()
     total_loss = 0
     
-    for batch_idx, (input_seq, target_seq) in enumerate(dataloader):
+    for batch_idx, batch in enumerate(dataloader):
+        input_seq = batch['X']
+        target_seq = batch['y']
         optimizer.zero_grad()
         # Forward pass
         output = model(input_seq)
         # Calcular pérdida
         # Reshape para calcular cross entropy
         output = output.reshape(-1, output.size(-1))
-        target_seq = target_seq.reshape(-1)
 
         loss = criterion(output, target_seq)
         
@@ -31,11 +32,12 @@ def evaluate_model(model, dataloader, criterion):
     total_loss = 0
     
     with torch.no_grad():
-        for input_seq, target_seq in dataloader:
+        for batch in dataloader:
+            input_seq = batch['X']
+            target_seq = batch['y']
             output = model(input_seq)  
             
             output = output.reshape(-1, output.size(-1))
-            target_seq = target_seq.reshape(-1)
             
             loss = criterion(output, target_seq)
             total_loss += loss.item()
@@ -43,14 +45,14 @@ def evaluate_model(model, dataloader, criterion):
     return total_loss / len(dataloader)
 
 
-def fit(model, train_dataloader, val_dataloader, optimizer, criterion, NUM_EPOCHS=100):
+def fit(model, train_dataloader, val_dataloader, criterion, optimizer, NUM_EPOCHS=100):
     train_losses = []
     val_losses = []
     print("Iniciando entrenamiento...")
     print(f"Épocas: {NUM_EPOCHS}, Tamaño de lote: {train_dataloader.batch_size}")
     for epoch in range(NUM_EPOCHS):
     # Entrenamiento
-        train_loss = train_epoch(model, train_dataloader, optimizer, criterion)
+        train_loss = train_epoch(model, train_dataloader, criterion, optimizer)
         train_losses.append(train_loss)
         
         # Validación

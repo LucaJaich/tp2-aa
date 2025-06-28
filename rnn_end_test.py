@@ -25,13 +25,17 @@ model = RNNEndModel(input_size=INPUT_SIZE, hidden_dim=64)
 LEARNING_RATE = 0.01
 
 criterion = nn.CrossEntropyLoss() 
-optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
+optimizer = torch.optim.Adam(params=model.parameters(), lr=LEARNING_RATE)
 
-train_dataset, test_dataset = torch.utils.data.random_split(dataset, [80, 20])
-print(train_dataset[0]["X"].shape)
+total_size = len(dataset)
+train_size = int(0.8 * total_size)
+test_size = total_size - train_size
+train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
+print(train_dataset[0])
+
 train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=16, shuffle=True)
 val_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=16, shuffle=False)
 
 print("Fitting model...")
-train_losses, val_losses = fit(model, train_dataloader, val_dataloader, optimizer, criterion, NUM_EPOCHS=1)
+train_losses, val_losses = fit(model, train_dataloader, val_dataloader, criterion, optimizer, NUM_EPOCHS=1)
 len(train_losses)

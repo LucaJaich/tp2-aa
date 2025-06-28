@@ -1,5 +1,5 @@
 import numpy as np
-from datasets import TextDataset
+from datasets import TextDataset, assign_classes
 
 class CapTextDataset(TextDataset):
     def __init__(self, texts: list[str], tokenizer="bert"):
@@ -89,21 +89,6 @@ def create_window(i: int, embeddings: np.ndarray, window_size: int) -> np.ndarra
         np.concatenate([left_padding, embeddings[start:i].flatten()]),
         np.concatenate([embeddings[min(i+1, len(embeddings)):end].flatten(), right_padding])
     ]
-
-def assign_classes(labels: list[str]) -> list[int]:
-    """
-    Assigns a unique integer to each unique string in the list,
-    in the order of first appearance.
-    """
-    label_to_class = {}
-    classes = []
-    current_class = 0
-    for label in labels:
-        if label not in label_to_class:
-            label_to_class[label] = current_class
-            current_class += 1
-        classes.append(label_to_class[label])
-    return classes
 
 if __name__ == "__main__":
     # Example usage

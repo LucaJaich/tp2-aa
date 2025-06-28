@@ -13,3 +13,19 @@ class TextDataset(Dataset):
 
     def __getitem__(self, idx):
         return self.inputs.iloc[idx]
+
+
+def assign_classes(labels: list[str]) -> list[int]:
+    """
+    Assigns a unique integer to each unique string in the list,
+    in the order of first appearance.
+    """
+    label_to_class = {}
+    classes = []
+    current_class = 0
+    for label in labels:
+        if label not in label_to_class:
+            label_to_class[label] = current_class
+            current_class += 1
+        classes.append(label_to_class[label])
+    return classes
