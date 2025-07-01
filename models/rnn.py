@@ -34,7 +34,7 @@ class RNN(nn.Module):
         """
         lstm_out, _ = self.lstm(embeddings)  # (batch_size, seq_len, hidden_dim)
 
-        out_punct_inic = self.fc_punct_init(lstm_out)
+        out_punct_inic = self.fc_punct_inic(lstm_out)
         out_punct_final = self.fc_punct_final(lstm_out)
         out_caps = self.fc_caps(lstm_out)
 
