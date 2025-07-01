@@ -22,9 +22,9 @@ class RNN(nn.Module):
             logits de capitalizacion entre todo minuscula, primera mayuscula, alguna mayuscula intermedia, todo mayuscula
         """
         # embeddings: (batch, seq_len, emb_dim)
-        packed_input = pack_padded_sequence(embeddings, lengths.cpu(), batch_first=True, enforce_sorted=False)
+        packed_input = pack_padded_sequence(embeddings, lengths.cpu(), batch_first=True, enforce_sorted=False) #convierte secuencia con padding en estructura para que procese la lstm
         packed_output, _ = self.lstm(packed_input)
-        lstm_out, _ = pad_packed_sequence(packed_output, batch_first=True)  # (batch, max_seq_len, hidden_dim)
+        lstm_out, _ = pad_packed_sequence(packed_output, batch_first=True)  # reconstruye las secuencias con padding
 
         out_punct_inic = self.fc_punct_inic(lstm_out)
         out_punct_final = self.fc_punct_final(lstm_out)
