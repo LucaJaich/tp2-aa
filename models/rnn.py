@@ -26,7 +26,6 @@ class RNN(nn.Module):
 
 
     def forward(self, embeddings):
-
         """
             Receives a sequence of BERT embeddings and outputs, for each token:
             logits de puntuacion inicial entre ¿ o nada
