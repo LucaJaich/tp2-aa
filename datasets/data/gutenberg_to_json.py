@@ -1,27 +1,41 @@
 from datasets import load_dataset
 import os
 import json
+import re
 
-MAX_TEXTS = 3
+MAX_TEXTS = 50
 
-def save_to_json(processed_text: str, output_dir: str, i: int):
+def remove_gutenberg_boilerplate(text):
     """
-    Divide un texto en párrafos y lo guarda como una lista JSON en text_{i}.json.
-    
-    - processed_text: string largo (texto completo)
-    - output_dir: directorio donde guardar los archivos
-    - i: índice del archivo
+    Intenta remover el encabezado y pie de los textos de Gutenberg.
     """
+    start_match = re.search(r"\*\*\* START OF.*?\*\*\*", text, re.IGNORECASE)
+    end_match = re.search(r"\*\*\* END OF.*?\*\*\*", text, re.IGNORECASE)
+
+    start = start_match.end() if start_match else 0
+    end = end_match.start() if end_match else len(text)
+
+    return text[start:end].strip()
+
+def save_to_json(text: str, output_dir: str, i: int):
+    """
+    Divide el texto en párrafos (usando dobles saltos de línea) y guarda como JSON.
+    """
+    # limpiar el texto de Gutenberg
+    text = remove_gutenberg_boilerplate(text)
+
+    # divido por párrafo para no cargar en memoria todo el texto
+    paragraphs = re.split(r'\n\s*\n', text)
+    paragraphs = [p.strip().replace('\n', ' ') for p in paragraphs if p.strip()]
+
     os.makedirs(output_dir, exist_ok=True)
-
-    paragraphs = [p.strip() for p in processed_text.split("\n") if p.strip()]
-
     filename = os.path.join(output_dir, f"text_{i}.json")
     with open(filename, "w", encoding="utf-8") as f:
         json.dump(paragraphs, f, ensure_ascii=False, indent=2)
 
 def main():    
-    output_dir = "gutenberg"
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    output_dir = os.path.join(script_dir, "gutenberg")  
     os.makedirs(output_dir, exist_ok=True)
 
     dataset = load_dataset("manu/project_gutenberg", split="es", streaming=True)
@@ -29,24 +43,16 @@ def main():
     print('Lodaded dataset')
 
     for i, example in enumerate(dataset):
+        #tarda mucho el primero, despues arranca
 
         if i >= MAX_TEXTS:
             break
         
-        full_text = example["text"][:3000]
+        print('Processing example', i)
+        full_text = example["text"]
 
-        print(f"Processing text {i+1}/{MAX_TEXTS}: {full_text[:50]}...")
+        save_to_json(full_text, output_dir, i)
 
-        # Encontrar las posiciones de las apariciones de '***'
-        parts = full_text.split("***")
-
-        if len(parts) >= 6:
-            # sacar licencia y aclaraciones gutenberg
-            processed_text = parts[2]
-        else:
-            pass
-
-        save_to_json(processed_text, output_dir, i)
 
 if __name__ == "__main__":
     main()
