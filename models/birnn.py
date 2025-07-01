@@ -1,6 +1,6 @@
 from torch import nn
 
-class RNN(nn.Module):
+class BiRNN(nn.Module):
 
     def __init__(self, embedding_dim, hidden_dim, num_layers=1):
         super().__init__()
