@@ -1,16 +1,5 @@
 from torch import nn
-
-# class RNNEndModel(nn.Module):
-#     def __init__(self, input_size, hidden_dim):
-#         super().__init__()
-#         self.rnn = nn.LSTM(input_size, hidden_size=hidden_dim, batch_first=True)
-#         softmax = nn.Softmax()
-#         self.fc = nn.Sequential(nn.Linear(hidden_dim, 4), softmax)
-
-#     def forward(self, x):
-#         output, _ = self.rnn(x)
-#         output = self.fc(output.squeeze(1))
-#         return output
+from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 class RNN(nn.Module):
 
@@ -25,14 +14,17 @@ class RNN(nn.Module):
         #sin softmax porque se usa CrossEntropyLoss que ya lo aplica internamente
 
 
-    def forward(self, embeddings):
+    def forward(self, embeddings, lengths):
         """
             Receives a sequence of BERT embeddings and outputs, for each token:
             logits de puntuacion inicial entre ¿ o nada
             logits de puntuacion final entre ? , . o nada
             logits de capitalizacion entre todo minuscula, primera mayuscula, alguna mayuscula intermedia, todo mayuscula
         """
-        lstm_out, _ = self.lstm(embeddings)  # (batch_size, seq_len, hidden_dim)
+        # embeddings: (batch, seq_len, emb_dim)
+        packed_input = pack_padded_sequence(embeddings, lengths.cpu(), batch_first=True, enforce_sorted=False)
+        packed_output, _ = self.lstm(packed_input)
+        lstm_out, _ = pad_packed_sequence(packed_output, batch_first=True)  # (batch, max_seq_len, hidden_dim)
 
         out_punct_inic = self.fc_punct_inic(lstm_out)
         out_punct_final = self.fc_punct_final(lstm_out)
