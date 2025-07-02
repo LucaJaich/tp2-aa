@@ -1,7 +1,7 @@
 from torch import nn
     
 class RNN(nn.Module):
-    def __init__(self, embedding_dim, hidden_dim, num_layers=1, bidirectional=False, dropout=0.5):
+    def __init__(self, embedding_dim, hidden_dim, num_layers=1, bidirectional=False, dropout=0.1):
         super().__init__()
         
         hidden_dim = hidden_dim * 2 if bidirectional else hidden_dim

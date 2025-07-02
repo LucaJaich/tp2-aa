@@ -3,7 +3,7 @@ import time
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-def train_epoch(model, dataloader, criterion, optimizer):
+def train_epoch(model, dataloader, loss_punt_inic, loss_punt_final, loss_caps, optimizer):
     model.train()
     total_loss = 0
     for batch in dataloader:
@@ -16,9 +16,9 @@ def train_epoch(model, dataloader, criterion, optimizer):
 
         out_inic, out_final, out_cap = model(X)
         
-        loss1 = criterion(out_inic, y_inic)
-        loss2 = criterion(out_final, y_final)
-        loss3 = criterion(out_cap, y_cap)
+        loss1 = loss_punt_inic(out_inic, y_inic)
+        loss2 = loss_punt_final(out_final, y_final)
+        loss3 = loss_caps(out_cap, y_cap)
 
         loss = loss1 + loss2 + loss3
         loss.backward()
@@ -31,7 +31,7 @@ def train_epoch(model, dataloader, criterion, optimizer):
     return total_loss / len(dataloader)
 
 
-def evaluate_model(model, dataloader, criterion):
+def evaluate_model(model, dataloader, loss_punt_inic, loss_punt_final, loss_caps):
     """Evalúa el modelo en el conjunto de validación"""
     model.eval()
     total_loss = 0
@@ -44,9 +44,9 @@ def evaluate_model(model, dataloader, criterion):
             y_cap = batch['cap'].to(DEVICE)
             out_inic, out_final, out_cap = model(X)
                                 
-            loss1 = criterion(out_inic, y_inic)
-            loss2 = criterion(out_final, y_final)
-            loss3 = criterion(out_cap, y_cap)
+            loss1 = loss_punt_inic(out_inic, y_inic)
+            loss2 = loss_punt_final(out_final, y_final)
+            loss3 = loss_caps(out_cap, y_cap)
 
             loss = loss1 + loss2 + loss3
             total_loss += loss.item()
@@ -54,7 +54,7 @@ def evaluate_model(model, dataloader, criterion):
     return total_loss / len(dataloader)
 
 
-def fit(model, train_dataloader, val_dataloader, criterion, optimizer, NUM_EPOCHS=100):
+def fit(model, train_dataloader, val_dataloader, loss_punt_inic, loss_punt_final, loss_caps, optimizer, NUM_EPOCHS=100):
     train_losses = []
     val_losses = []
     print("Iniciando entrenamiento...")
@@ -62,11 +62,11 @@ def fit(model, train_dataloader, val_dataloader, criterion, optimizer, NUM_EPOCH
     
     for epoch in range(NUM_EPOCHS):
         time_start = time.time()
-        train_loss = train_epoch(model, train_dataloader, criterion, optimizer)
+        train_loss = train_epoch(model, train_dataloader, loss_punt_inic, loss_punt_final, loss_caps, optimizer)
         # print("Pérdida de entrenamiento:", train_loss)
         train_losses.append(train_loss)
         
-        val_loss = evaluate_model(model, val_dataloader, criterion)
+        val_loss = evaluate_model(model, val_dataloader, loss_punt_inic, loss_punt_final, loss_caps)
         # print("Pérdida de VAL:", val_loss)
 
         val_losses.append(val_loss)

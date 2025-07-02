@@ -3,8 +3,8 @@ from utils import Text, format_input
 import torch
 
 INPUT_SIZE = 768  # por bert cases
-HIDDEN_DIM = 512  # hidden dimension size
-NUM_LAYERS = 3
+HIDDEN_DIM = 64  # hidden dimension size
+NUM_LAYERS = 1
 BIDIRECTIONAL = True
 
 PATH="./models/checkpoints/exported_program_brnn.pt2"
@@ -15,7 +15,7 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = model.to(DEVICE)
 model.eval()
 
-TEXTO = "El perro ladra. El gato maulla. El pez nada."
+TEXTO = "El perro ladra, el gato maulla y el pez nada."
 text = Text(TEXTO)
 print(format_input(text, id=0)) 
 
