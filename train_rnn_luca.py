@@ -10,7 +10,7 @@ with open('datasets/data/cuentos/cuentos_cleaned_train.json', 'r') as file:
     data = json.load(file)
 print("Dataset loaded.")
 
-dataset = RNNTextDataset(data[:5000])
+dataset = RNNTextDataset(data[:7000])
 print("Dataset size:", len(dataset))
 print("PUNT FINAL:", dataset.inputs["punt_final"].value_counts(normalize=True))
 print("PUNT INIC:", dataset.inputs["punt_inicial"].value_counts(normalize=True))
@@ -19,11 +19,11 @@ print("Dataset created.")
 
 BIDIRECTIONAL = True
 INPUT_SIZE = dataset[0]["X"].shape[0] # embedding size
-HIDDEN_DIM = 64  # hidden dimension size
+HIDDEN_DIM = 32  # hidden dimension size
 NUM_LAYERS = 1  # number of LSTM layers
-LEARNING_RATE = 0.001
-BATCH_SIZE = 20000
-EPOCHS = 5
+LEARNING_RATE = 0.00001
+BATCH_SIZE = 10000
+EPOCHS = 30
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("DEVICE:", DEVICE)
 
@@ -32,7 +32,7 @@ model = model.to(DEVICE)
 
 weights_punct_inic = torch.tensor([1.0, 1.0]).to(DEVICE)  # Adjust weights for initial punctuation
 weights_punct_final = torch.tensor([1.0, 1.0, 1.0, 1.0]).to(DEVICE)  # Adjust weights for final punctuation
-weights_caps = torch.tensor([1.0, 1.0]).to(DEVICE)  # Adjust weights for capitalization
+weights_caps = torch.tensor([1.0, 5.0]).to(DEVICE)  # Adjust weights for capitalization
 
 loss_punt_inic = nn.CrossEntropyLoss(weight=weights_punct_inic.to(DEVICE))
 loss_punt_final = nn.CrossEntropyLoss(weight=weights_punct_final.to(DEVICE))

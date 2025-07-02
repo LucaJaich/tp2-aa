@@ -3,7 +3,7 @@ from utils import Text, format_input
 import torch
 
 INPUT_SIZE = 768  # por bert cases
-HIDDEN_DIM = 64  # hidden dimension size
+HIDDEN_DIM = 32  # hidden dimension size
 NUM_LAYERS = 1
 BIDIRECTIONAL = True
 

@@ -28,9 +28,9 @@ class RNNTextDataset(TextDataset):
         self.X = torch.tensor(np.concatenate([text.embeddings for text in self.texts]))
         # self.punt_final = torch.tensor(assign_classes(self.inputs['punt_final']))
         # self.punt_inicial = torch.tensor(assign_classes(self.inputs['punt_final']))
-        self.punt_inicial = one_hot(self.inputs['punt_inicial'])
-        self.punt_final = one_hot(self.inputs['punt_final'])
-        self.cap = one_hot(self.inputs['cap'])  # Capitalization classes
+        self.punt_inicial = torch.tensor(assign_classes(self.inputs['punt_inicial']))
+        self.punt_final = torch.tensor(assign_classes(self.inputs['punt_final']))
+        self.cap = torch.tensor(self.inputs['cap'])  # Capitalization classes
         
     def __getitem__(self, idx):
         return {
