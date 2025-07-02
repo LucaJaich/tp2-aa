@@ -5,3 +5,5 @@ film_reviews.json
 datasets/streaming_dataset.py
 cuentos/
 checkpoints/
+test_text_dataset.py
+train_rnn_teo.py
