@@ -3,3 +3,5 @@ film_reviews.csv
 film_reviews.json
 /datasets/data/gutenberg
 datasets/streaming_dataset.py
+cuentos/
+checkpoints/

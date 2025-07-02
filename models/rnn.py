@@ -1,33 +1,39 @@
 from torch import nn
-from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
-
+    
 class RNN(nn.Module):
-
-    def __init__(self, embedding_dim, hidden_dim, num_layers=1):
+    def __init__(self, embedding_dim, hidden_dim, num_layers=1, bidirectional=False, dropout=0.5):
         super().__init__()
+        
+        hidden_dim = hidden_dim * 2 if bidirectional else hidden_dim
+        
         self.lstm = nn.LSTM(embedding_dim, hidden_dim, num_layers, 
-                            batch_first=True, bidirectional=False)
-
-        self.fc_punct_inic = nn.Linear(hidden_dim, 2)  # ¿ o nada
-        self.fc_punct_final = nn.Linear(hidden_dim, 4) # ¿ , . o nada
-        self.fc_caps = nn.Linear(hidden_dim, 4)        # tipos de capitalización
-        #sin softmax porque se usa CrossEntropyLoss que ya lo aplica internamente
-
-
-    def forward(self, embeddings, lengths):
-        """
-            Receives a sequence of BERT embeddings and outputs, for each token:
-            logits de puntuacion inicial entre ¿ o nada
-            logits de puntuacion final entre ? , . o nada
-            logits de capitalizacion entre todo minuscula, primera mayuscula, alguna mayuscula intermedia, todo mayuscula
-        """
-        # embeddings: (batch, seq_len, emb_dim)
-        packed_input = pack_padded_sequence(embeddings, lengths.cpu(), batch_first=True, enforce_sorted=False) #convierte secuencia con padding en estructura para que procese la lstm
-        packed_output, _ = self.lstm(packed_input)
-        lstm_out, _ = pad_packed_sequence(packed_output, batch_first=True)  # reconstruye las secuencias con padding
-
-        out_punct_inic = self.fc_punct_inic(lstm_out)
-        out_punct_final = self.fc_punct_final(lstm_out)
-        out_caps = self.fc_caps(lstm_out)
-
+                    batch_first=True, bidirectional=False, dropout=dropout)
+        
+        self.fc_punct_inic = nn.Sequential(
+            nn.Linear(hidden_dim, hidden_dim),  
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden_dim, 2)
+        )
+        self.fc_punct_final = nn.Sequential(
+            nn.Linear(hidden_dim, hidden_dim),  
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden_dim, 4)
+        )
+        self.fc_caps = nn.Sequential(
+            nn.Linear(hidden_dim, hidden_dim),  
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden_dim, 2)
+        )
+        
+    def forward(self, x):
+        output, _ = self.lstm(x)
+        
+        output = output.squeeze(1)
+        out_punct_inic = self.fc_punct_inic(output)
+        out_punct_final = self.fc_punct_final(output)
+        out_caps = self.fc_caps(output)
+        
         return out_punct_inic, out_punct_final, out_caps
